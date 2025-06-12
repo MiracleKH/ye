@@ -58,7 +58,7 @@ class DataAugmenter:
         return np.array(augmented)
 
     def time_shift(self, signals, shift_range_sec=1.0, random_state=None):
-        """时间偏移（左/右移动信号）"""
+        """时间偏移"""
         if random_state is not None:
             np.random.seed(random_state)
 
@@ -67,9 +67,9 @@ class DataAugmenter:
 
         for sig in signals:
             shift = np.random.randint(-max_shift, max_shift)
-            if shift > 0:  # 右移（后面补零）
+            if shift > 0: 
                 augmented_sig = np.concatenate([np.zeros(shift), sig[:-shift]])
-            elif shift < 0:  # 左移（前面补零）
+            elif shift < 0:  
                 augmented_sig = np.concatenate([sig[-shift:], np.zeros(-shift)])
             else:
                 augmented_sig = sig
@@ -89,7 +89,7 @@ class DataAugmenter:
         return np.array(augmented)
 
     def random_perturbation(self, signals, perturbation_level=0.03, segment_length=50, random_state=None):
-        """随机扰动（在小片段上添加随机噪声）"""
+        """在小片段上添加随机噪声"""
         if random_state is not None:
             np.random.seed(random_state)
 
@@ -162,7 +162,7 @@ class DataLoader:
         return np.array([np.median(padded[i:i + window_size]) for i in range(len(signal))])
 
     def load_all_data(self):
-        """加载所有标签和通道的数据，合并通道并应用数据增强"""
+      
         data = {label: [] for label in self.labels}  #按标签储存样本
         print("正在加载数据...")
 
@@ -181,7 +181,7 @@ class DataLoader:
                         for i in range(self.augmentation_factor):
                             augmented_sig = self.augmenter.apply_augmentation(
                                 [processed_sig],
-                                random_state=i  # 确保每次生成不同的增强样本
+                                random_state=i  
                             )[0]
                             data[label].append(augmented_sig)
 
@@ -201,7 +201,7 @@ class DataAnalyzer:
 
     @staticmethod
     def visualize_feature_spread(features_dict, class_names, n_features=4):
-        """可视化前n个特征的分布对比"""
+       
         plt.figure(figsize=(16, 12))
         for i in range(n_features):
             plt.subplot(2, 2, i + 1)
@@ -222,7 +222,6 @@ class DataAnalyzer:
             for j, ch in enumerate(channels):
                 plt.subplot(len(data_dict), len(channels), i * len(channels) + j + 1)
 
-                # 从每个类别中随机选择n_examples个样本
                 samples = np.random.choice(len(data_dict[lbl]), n_examples, replace=False)
                 for k, idx in enumerate(samples):
                     plt.plot(data_dict[lbl][idx], alpha=0.7, label=f"样本{k + 1}")
@@ -348,11 +347,11 @@ class FeatureExtractor:
         """提取呼吸周期特征"""
         cycle_features = []
         for sig in signals:
-            # 峰值检测（寻找吸气顶点）
+            # 峰值检测
             peaks, _ = signal.find_peaks(sig, height=np.mean(sig) + 0.5 * np.std(sig),
                                          distance=self.fs * 0.5)  # 至少间隔0.5秒
 
-            # 谷值检测（寻找呼气低点）
+            # 谷值检测
             valleys, _ = signal.find_peaks(-sig, height=-(np.mean(sig) - 0.5 * np.std(sig)),
                                            distance=self.fs * 0.5)
 
@@ -396,7 +395,7 @@ class FeatureExtractor:
         print("\n正在提取特征...")
 
         for lbl in tqdm(data_dict, desc="标签"):
-            # 处理该标签下的所有样本
+          
             sigs = self.interpolate_signals(data_dict[lbl])
 
             # 提取各类特征
@@ -470,7 +469,7 @@ class BreathingClassifier:
 
         inputs = tf.keras.Input(shape=input_shape)
 
-        # 特征预处理层（调整为适合CNN的输入形状）
+        # 特征预处理层
         x = layers.Reshape((-1, 1))(inputs)
 
         # 多层1D卷积提取特征
@@ -543,7 +542,7 @@ class Visualizer:
         history_df.to_csv(os.path.join(save_path, 'training_history.csv'), index=False)
         print(f"已保存训练历史数据（含epoch）到 {save_path}/training_history.csv")
 
-        # 绘制图像（使用epoch作为横坐标）
+        # 绘制图像
         plt.figure(figsize=(12, 4))
 
         # 准确率曲线
@@ -649,7 +648,7 @@ class Visualizer:
 
 
 def main():
-    # 创建结果保存目录
+   
     results_dir = './results'
     os.makedirs(results_dir, exist_ok=True)
 
@@ -672,7 +671,7 @@ def main():
         sample_idx = 0
         original_signal = data[sample_label][sample_idx]
 
-        # 生成多个增强版本
+       
         augmented_signals = []
         for i in range(3):  # 生成3个增强样本
             augmented = augmenter.apply_augmentation(
